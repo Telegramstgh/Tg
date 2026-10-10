@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Верификация</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f141c;
+            color: #f8fafc;
+        }
+        /* Custom animations for airplane and transitions */
+        @keyframes fly {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .animate-fly {
+            animation: fly 2s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.4; }
+        }
+        .animate-glow {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 overflow-hidden relative">
+
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-sky-600 rounded-full filter blur-[120px] animate-glow"></div>
+        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-700 rounded-full filter blur-[120px] animate-glow"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="w-full max-w-md bg-[#18222d] border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8 relative z-10 backdrop-blur-xl">
+
+        <div id="step-warning" class="space-y-6 text-center">
+            <div class="w-20 h-20 bg-amber-500/10 border border-amber-500/30 rounded-2xl mx-auto flex items-center justify-center text-amber-400 shadow-inner">
+                <svg class="w-10 h-10 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            
+            <div class="space-y-2">
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-amber-400">ВНИМАНИЕ!</h1>
+                <p class="text-base sm:text-lg font-semibold text-white">ИНДЕФИКАЦИЯ АККАУНТА Telegram</p>
+                <p class="text-sm text-slate-400 leading-relaxed pt-1">
+                    Для обеспечения безопасности вашего аккаунта и доступа к закрытым каналам требуется обязательная проверка подлинности данных.
+                </p>
+            </div>
+
+            <button onclick="startVerification()" class="w-full py-3.5 px-6 bg-sky-500 hover:bg-sky-400 active:scale-[0.98] transition-all duration-200 rounded-2xl font-semibold text-white shadow-lg shadow-sky-500/25 cursor-pointer">
+                Пройти верификацию
+            </button>
+        </div>
+
+        <div id="step-loading" class="hidden space-y-8 text-center py-6">
+            <div class="w-24 h-24 bg-sky-500/10 border border-sky-500/30 rounded-3xl mx-auto flex items-center justify-center text-sky-400 animate-fly shadow-inner">
+                <!-- Telegram Paper Airplane SVG -->
+                <svg class="w-12 h-12 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.03-1.99 1.27-5.62 3.72-.53.36-1.01.54-1.44.53-.47-.02-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.25.38-.51 1.05-.78 4.12-1.8 6.87-2.99 8.25-3.57 3.93-1.65 4.75-1.94 5.28-1.95.12 0 .39.03.56.17.14.12.18.28.2.4-.02.07-.02.2-.04.37z"/>
+                </svg>
+            </div>
+
+            <div class="space-y-3">
+                <h2 id="loading-text" class="text-lg font-semibold text-white animate-pulse">Инициализация...</h2>
+                <!-- Progress bar container -->
+                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-700">
+                    <div id="progress-bar" class="bg-sky-500 h-full rounded-full transition-all duration-300 w-0"></div>
+                </div>
+                <p class="text-xs text-slate-500">Пожалуйста, не закрывайте страницу</p>
+            </div>
+        </div>
+
+        <div id="step-success" class="hidden space-y-6 text-center">
+            <div class="w-24 h-24 bg-emerald-500/10 border border-emerald-500/30 rounded-3xl mx-auto flex items-center justify-center text-5xl shadow-inner animate-bounce">
+                🦆
+            </div>
+
+            <div class="space-y-2">
+                <div class="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-medium border border-emerald-500/20 mb-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>Верификация завершена</span>
+                </div>
+                <h2 class="text-xl font-bold text-white">Успешно!</h2>
+                <p class="text-sm text-slate-300 leading-relaxed bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+                    Данные с вашего Telegram аккаунта скопированы
+                </p>
+            </div>
+
+            <button onclick="redirectToTelegram()" class="w-full py-3.5 px-6 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] transition-all duration-200 rounded-2xl font-semibold text-white shadow-lg shadow-emerald-500/25 cursor-pointer flex items-center justify-center gap-2">
+                <span>Продолжить</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        function startVerification() {
+            // Hide warning, show loading
+            document.getElementById('step-warning').classList.add('hidden');
+            document.getElementById('step-loading').classList.remove('hidden');
+
+            const loadingTexts = [
+                "Идентификация аккаунта...",
+                "Синхронизация данных...",
+                "Проверка безопасности сессии...",
+                "Завершение процедуры..."
+            ];
+
+            const progressBar = document.getElementById('progress-bar');
+            const loadingText = document.getElementById('loading-text');
+            
+            let progress = 0;
+            let textIndex = 0;
+
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 8) + 5; // Random increment
+                if (progress > 100) progress = 100;
+                
+                progressBar.style.width = progress + '%';
+
+                // Change text dynamically based on progress
+                if (progress > 25 && progress < 50) textIndex = 1;
+                else if (progress >= 50 && progress < 80) textIndex = 2;
+                else if (progress >= 80) textIndex = 3;
+
+                loadingText.textContent = loadingTexts[textIndex];
+
+                if (progress === 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('step-loading').classList.add('hidden');
+                        document.getElementById('step-success').classList.remove('hidden');
+                    }, 500);
+                }
+            }, 180);
+        }
+
+        function redirectToTelegram() {
+            window.location.href = "https://t.me/giqvsjwc";
+        }
+    </script>
+</body>
+</html>
